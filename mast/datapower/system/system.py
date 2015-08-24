@@ -74,7 +74,8 @@ def _pmr_backup_all_domains(appliances, out_dir, timestamp):
 
 
 def _pmr_query_status_providers(appliances, out_dir, timestamp):
-    filename = os.path.join('etc', 'statusProviders.txt')
+    global MAST_HOME
+    filename = os.path.join(MAST_HOME, 'etc', 'statusProviders.txt')
     with open(filename, 'r') as fin:
         default_providers = [_.strip() for _ in fin.readlines()]
     filename = os.path.join('etc', 'statusProviders-applicationDomains.txt')
