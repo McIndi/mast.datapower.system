@@ -642,27 +642,6 @@ def save_config(appliances=[], credentials=[],
 
 Parameters:
 * Domain - A list of domains to save
-
-    >>> result = system.save_config(
-    ...     appliances=["localhost"],
-    ...     credentials=["user:pass"],
-    ...     timeout=120,
-    ...     Domain=["default"],
-    ...     web=False)
-    >>> print result
-    None
-    >>> print len(APPLIANCES[0]._history)
-    1
-    >>> result = system.save_config(
-    ...     appliances=["localhost"],
-    ...     credentials=["user:pass"],
-    ...     timeout=120,
-    ...     Domain=["all-domains"],
-    ...     web=False)
-    >>> print result
-    None
-    >>> print len(APPLIANCES[1]._history)
-    5
 """
     logger = make_logger("mast.system")
     check_hostname = not no_check_hostname
@@ -981,27 +960,6 @@ Parameters:
 * Domain - The domain to disable
 * save_config - If specified the configuration on the appliances will
 be saved
-
-    >>> result = system.disable_domain(
-    ...     appliances=["localhost"],
-    ...     credentials=["user:pass"],
-    ...     timeout=120,
-    ...     Domain=["testdomain1"],
-    ...     save_config=True,
-    ...     web=False)
-    >>> print result
-    None
-    >>> print len(APPLIANCES[0]._history)
-    2
-    >>> result = system.disable_domain(
-    ...     appliances=["localhost"],
-    ...     credentials=["user:pass"],
-    ...     timeout=120,
-    ...     Domain=["all-domains"],
-    ...     save_config=True,
-    ...     web=False)
-    >>> print len(APPLIANCES[1]._history)
-    7
 """
     logger = make_logger("mast.system")
     if isinstance(Domain, basestring):
@@ -1066,27 +1024,6 @@ Parameters:
 * Domain - The name of the domain to enable
 * save-config - If specified the configuration on the appliances
 will be saved
-
-    >>> result = system.enable_domain(
-    ...     appliances=["localhost"],
-    ...     credentials=["user:pass"],
-    ...     timeout=120,
-    ...     Domain=["testdomain1"],
-    ...     save_config=True,
-    ...     web=False)
-    >>> print result
-    None
-    >>> print len(APPLIANCES[0]._history)
-    2
-    >>> result = system.enable_domain(
-    ...     appliances=["localhost"],
-    ...     credentials=["user:pass"],
-    ...     timeout=120,
-    ...     Domain=["testdomain1"],
-    ...     save_config=False,
-    ...     web=False)
-    >>> print len(APPLIANCES[1]._history)
-    1
 """
     logger = make_logger("mast.system")
     if isinstance(Domain, basestring):
@@ -1164,31 +1101,6 @@ def quiesce_appliance(appliances=[], credentials=[],
 Parameters:
 
 * quiesce-timeout - The timeout before quiescing the domain
-
-    >>> result = system.quiesce_appliance(
-    ...     appliances=["localhost"],
-    ...     credentials=["user:pass"],
-    ...     timeout=120,
-    ...     quiesce_timeout=60,
-    ...     web=False)
-    <BLANKLINE>
-    localhost
-    *********
-    <BLANKLINE>
-    <env:Envelope xmlns:dp="http://www.datapower.com/schemas/management" \
-xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
-      <env:Body>
-        <dp:response>
-          <dp:timestamp>2015-01-12T17:20:26-05:00</dp:timestamp>
-          <dp:result>      OK     </dp:result>
-        </dp:response>
-      </env:Body>
-    </env:Envelope>
-    <BLANKLINE>
-    >>> print result
-    None
-    >>> print len(APPLIANCES[0]._history)
-    1
 """
     logger = make_logger("mast.system")
     check_hostname = not no_check_hostname
@@ -1246,19 +1158,6 @@ Parameters:
 * delay - The delay before rebooting
 * wait - The amount of time to wait for all appliances
 to come back up
-
-    >>> result = system.reboot_appliance(
-    ...     appliances=["localhost"],
-    ...     credentials=["user:pass"],
-    ...     timeout=120,
-    ...     delay=1,
-    ...     wait=120,
-    ...     web=False)  # doctest: +NORMALIZE_WHITESPACE
-        All appliances are back up
-    >>> print result
-    None
-    >>> print len(APPLIANCES[0]._history)
-    2
 """
     logger = make_logger("mast.system")
     check_hostname = not no_check_hostname
@@ -2182,56 +2081,7 @@ Parameters:
 * error-reports - Whether to clean up the error reports
 * recursive - Whether to recurse through sub-directories
 * backup_files - Whether to backup files before deleting them
-
-    >>> result = system.clean_up(
-    ...     ["localhost"],
-    ...     ["user:pass"],
-    ...     checkpoints=True,
-    ...     export=True,
-    ...     error_reports=True,
-    ...     recursive=True,
-    ...     logtemp=True,
-    ...     logstore=True,
-    ...     backup_files=True)  # doctest: +NORMALIZE_WHITESPACE
-        localhost - chkpoints:/ -  Cleaned
-        localhost - export:/ -  Cleaned
-        localhost - logtemp:/ -  Cleaned
-        localhost - logstore:/ -  Cleaned
-        localhost - ErrorReports - Cleaned
-    >>> print result
-    None
-    >>> print len(APPLIANCES[0]._history)
-    427
-    >>> result = system.clean_up(
-    ...     ["localhost"],
-    ...     ["user:pass"],
-    ...     checkpoints=True,
-    ...     export=True,
-    ...     error_reports=True,
-    ...     recursive=True,
-    ...     logtemp=True,
-    ...     logstore=True,
-    ...     backup_files=False)  # doctest: +NORMALIZE_WHITESPACE
-        localhost - chkpoints:/ -  Cleaned
-        localhost - export:/ -  Cleaned
-        localhost - logtemp:/ -  Cleaned
-        localhost - logstore:/ -  Cleaned
-        localhost - ErrorReports - Cleaned
-    >>> print len(APPLIANCES[1]._history)
-    247
-    >>> result = system.clean_up(
-    ...     ["localhost"],
-    ...     ["user:pass"],
-    ...     checkpoints=False,
-    ...     export=False,
-    ...     error_reports=False,
-    ...     recursive=False,
-    ...     logtemp=False,
-    ...     logstore=False,
-    ...     backup_files=False)
-    >>> print len(APPLIANCES[2]._history)
-    0
-    """
+"""
     check_hostname = not no_check_hostname
     env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
 
