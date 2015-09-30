@@ -779,7 +779,7 @@ Parameters:
 #
 # current commands:
 # ----------------
-# show-domains - Shows the domains of the specified appliances
+# list-domains - Shows the domains of the specified appliances
 # add-domain - adds a domain to the specified appliances
 # del-domain - removes a domain from the specified appliances
 # quiesce-domain - quiesce the specified domain
@@ -790,7 +790,7 @@ Parameters:
 
 
 # Tested!
-@cli.command('show-domains', category='domains')
+@cli.command('list-domains', category='domains')
 def list_domains(appliances=[], credentials=[],
                  timeout=120, no_check_hostname=False, web=False):
     """Lists the domains on the specified appliances as well as all common
@@ -820,7 +820,8 @@ domains."""
         for domain in appliance.domains:
             print '\t', domain
 
-    common = sets[0].intersection(*sets[1:])
+    common = list(sets[0].intersection(*sets[1:]))
+    common.sort()
     logger.info("domains common to {}: {}".format(
         str(env.appliances), str(common)))
     print '\n', 'Common'
