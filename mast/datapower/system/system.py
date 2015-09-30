@@ -1859,9 +1859,9 @@ save the file to"""
 def delete_file(appliances=[], credentials=[], timeout=120,
     Domain="", filename="", backup=False, out_dir="tmp",
     no_check_hostname=False, web=False):
-        """
-        Deletes a file from the specified appliances.
-        """
+    """
+    Deletes a file from the specified appliances.
+    """
     env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
     if backup:
         resp = {}
