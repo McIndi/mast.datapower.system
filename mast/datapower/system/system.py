@@ -1824,7 +1824,7 @@ the filename ie. local:/test.txt**
 def get_file(appliances=[], credentials=[], timeout=120,
              location=None, Domain='default', out_dir='tmp',
              no_check_hostname=False, web=False):
-    """Uploads a file to the specified appliances
+    """Retrieves a file from the specified appliances
 
 Parameters:
 
@@ -1855,13 +1855,11 @@ save the file to"""
             responses, suffix="get_file"), util.render_history(env)
 
 
-@cli.command('del_file', category="file management")
+@cli.command('del-file', category="file management")
 def delete_file(appliances=[], credentials=[], timeout=120,
     Domain="", filename="", backup=False, out_dir="tmp",
     no_check_hostname=False, web=False):
-    """
-    Deletes a file from the specified appliances.
-    """
+    """Deletes a file from the specified appliances."""
     env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
     if backup:
         resp = {}
@@ -2172,10 +2170,7 @@ def clean_up(appliances=[], credentials=[],
              recursive=False, logtemp=False,
              logstore=False, backup_files=True,
              timeout=120, out_dir='tmp', no_check_hostname=False, web=False):
-    """
-    ## system.clean_up
-
-    This will clean up the specified appliances filesystem.
+    """This will clean up the specified appliances filesystem.
 
 Parameters:
 
