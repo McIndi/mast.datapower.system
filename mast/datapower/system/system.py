@@ -1214,7 +1214,7 @@ xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
 @cli.command('unquiesce-appliance', category='appliances')
 def unquiesce_appliance(appliances=[], credentials=[],
                         timeout=120, no_check_hostname=False, web=False):
-    """Quiesce the specified appliances"""
+    """Unquiesce the specified appliances"""
     logger = make_logger("mast.system")
     check_hostname = not no_check_hostname
     env = datapower.Environment(
@@ -1238,7 +1238,7 @@ def unquiesce_appliance(appliances=[], credentials=[],
 @cli.command('reboot-appliance', category='appliances')
 def reboot_appliance(appliances=[], credentials=[],
                timeout=120, delay=10, wait=1200, no_check_hostname=False, web=False):
-    """Quiesce the specified appliances
+    """Reboot the specified appliances
 
 Parameters:
 
@@ -1301,7 +1301,7 @@ to come back up
 @cli.command('shutdown-appliance', category='appliances')
 def shutdown_appliance(appliances=[], credentials=[],
                timeout=120, delay=10, no_check_hostname=False, web=False):
-    """Quiesce the specified appliances
+    """Shutdown the specified appliances
 
 Parameters:
 
@@ -1331,7 +1331,7 @@ Parameters:
 @cli.command('reload-appliance', category='appliances')
 def reload_appliance(appliances=[], credentials=[],
                  timeout=120, delay=10, wait=180, no_check_hostname=False, web=False):
-    """Quiesce the specified appliances
+    """Reload the specified appliances
 
 Parameters:
 
@@ -1858,6 +1858,9 @@ save the file to"""
 def delete_file(appliances=[], credentials=[], timeout=120,
     Domain="", filename="", backup=False, out_dir="tmp",
     no_check_hostname=False, web=False):
+        """
+        Deletes a file from the specified appliances.
+        """
     env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
     if backup:
         resp = {}
