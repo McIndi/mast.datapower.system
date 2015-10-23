@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name="mast.datapower.system",
-    version="2.0.0",
+    version="2.0.4",
     author="Clifford Bressette",
     author_email="cliffordbressette@mcindi.com",
     description=("A Utility to work with the IBM DataPower"),
