@@ -2144,6 +2144,8 @@ def _clean_dir(appliance, _dir, domain, recursive, backup, timestamp, out_dir):
     # if not recursive don't include_directories
     files = appliance.ls(_dir, domain=domain, include_directories=recursive)
     for file in files:
+        if "diag-log" in file and not "." in file:
+            continue
         if ':/' in file:
             _clean_dir(
                 appliance,
