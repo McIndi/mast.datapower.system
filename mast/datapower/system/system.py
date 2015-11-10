@@ -1295,10 +1295,10 @@ Parameters:
 * reload - Whether to reload the appliance"""
     logger = make_logger("mast.system")
     if web:
-        from backups import get_normal_backup
+        from mast.datapower.backups import get_normal_backup
     else:
         #lint:disable
-        from bin.backups import get_normal_backup
+        from mast.datapower.backups import get_normal_backup
         #lint:enable
     check_hostname = not no_check_hostname
     env = datapower.Environment(
