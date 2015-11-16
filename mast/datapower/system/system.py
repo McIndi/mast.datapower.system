@@ -1829,10 +1829,43 @@ in the specified domain."""
     if web:
         return util.render_see_download_table(
             _, suffix="copy_directory"), util.render_history(env)
-#
-#~#~#~#~#~#~#~#
 
-#~#~#~#~#~#~#~#
+
+@cli.command("create-dir", category="file management")
+def create_dir(appliances=[], credentials=[], timeout=120,
+               Domain="default", directory="", no_check_hostname=False,
+               web=False):
+    """Creates a directory in the specified domain.
+
+__parent directory does not need to exist.__"""
+    check_hostname = not no_check_hostname
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout=timeout,
+        check_hostname=check_hostname)
+    kwargs = {'domain': Domain, 'Dir': directory}
+    responses = env.perform_action('CreateDir', **kwargs)
+    logger.debug("Responses received: {}".format(str(responses)))
+
+    if web:
+        return util.render_boolean_results_table(
+            responses, suffix="create-directory"), util.render_history(env)
+
+    for host, response in list(responses.items()):
+        if response:
+            print
+            print host
+            print '=' * len(host)
+            if response:
+                print 'OK'
+            else:
+                print "FAILURE"
+                print response
+#
+# ~#~#~#~#~#~#~#
+
+# ~#~#~#~#~#~#~#
 # auditing
 # ========
 #
