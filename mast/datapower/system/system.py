@@ -1701,9 +1701,9 @@ def set_file(appliances=[], credentials=[], timeout=120,
 Parameters:
 
 * file-in - The path and filename of the file to upload
-* destination - Should be the path and filename of the file
-once uploaded to the DataPower **NOTE: file_out should contain
-the filename ie. local:/test.txt**
+* destination - If a location or directory is provided filename will be
+as it appears on the local machine, if a path and filename is provided
+filename will be as provided
 * Domain - The domain to which to upload the file"""
     check_hostname = not no_check_hostname
     env = datapower.Environment(
