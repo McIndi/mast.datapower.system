@@ -1706,7 +1706,11 @@ once uploaded to the DataPower **NOTE: file_out should contain
 the filename ie. local:/test.txt**
 * Domain - The domain to which to upload the file"""
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
     kwargs = {
         'file_in': file_in,
         'file_out': destination,
