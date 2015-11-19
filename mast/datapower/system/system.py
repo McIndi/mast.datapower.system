@@ -10,22 +10,27 @@ McIndi Solutions LLC
 import os
 import sys
 import flask
+import base64
 import shutil
 import zipfile
-import logging
 import commandr
-from mast.xor import xorencode
 from time import time, sleep
+from mast.xor import xorencode
+from mast.plugins.web import Plugin
 from mast.logging import make_logger
 from mast.timestamp import Timestamp
-import mast.plugin_utils.plugin_utils as util
 from mast.datapower import datapower
+from functools import partial, update_wrapper
+import mast.plugin_utils.plugin_utils as util
+import mast.plugin_utils.plugin_functions as pf
+
 
 cli = commandr.Commandr()
 
 MAST_HOME = os.environ["MAST_HOME"]
 
 logger = make_logger("mast.datapower.system")
+
 
 def _pmr_create_dirs(appliances, out_dir, timestamp):
     for appliance in appliances:
@@ -137,9 +142,9 @@ def _pmr_download_error_reports(appliances, out_dir, ers, timestamp):
         else:
             appliance.log_warn(''.join(
                     ('\tThe failure notification looks like it is set for ',
-                    protocol,
-                    ', which we do not currently support. Failing back',
-                    'to temporary:...\n')))
+                     protocol,
+                     ', which we do not currently support. Failing back',
+                     'to temporary:...\n')))
             path = 'temporary:'
             filestore = appliance.get_filestore('default', path)
             _dir = filestore.xml.find('.//location[@name="%s"]' % (path))
@@ -208,7 +213,7 @@ TOO HEAVILY ON THIS SECURITY**"""
     print xorencode(string)
 
 
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 # Caches
 # ======
 #
@@ -232,7 +237,8 @@ TOO HEAVILY ON THIS SECURITY**"""
 
 @cli.command('flush-aaa-cache', category='caches')
 def flush_aaa_cache(appliances=[], credentials=[],
-                    timeout=120, Domain="", aaa_policy="", no_check_hostname=False, web=False):
+                    timeout=120, Domain="", aaa_policy="",
+                    no_check_hostname=False, web=False):
     """This will flush the AAA Cache for the specified AAAPolicy
 in the specified Domain on the specified appliances.
 
@@ -337,8 +343,8 @@ def flush_dns_cache(appliances=[], credentials=[],
 
 @cli.command('flush-document-cache', category='caches')
 def flush_document_cache(appliances=[], credentials=[],
-                    timeout=120, Domain="", xml_manager="",
-                    no_check_hostname=False, web=False):
+                         timeout=120, Domain="", xml_manager="",
+                         no_check_hostname=False, web=False):
     """This will flush the Daocument cache for the specified
 xml_manager in the specified domain on teh specified appliances.
 
@@ -362,7 +368,7 @@ like to flush"""
             xml_manager))
     kwargs = {"XMLManager": xml_manager, 'domain': Domain}
     responses = env.perform_action('FlushDocumentCache', **kwargs)
-    logger.debug("Responses received: {}".format(str(resonses)))
+    logger.debug("Responses received: {}".format(str(responses)))
 
     if web:
         return util.render_boolean_results_table(
@@ -408,8 +414,10 @@ like to flush"""
     logger.debug("Responses received: {}".format(str(responses)))
 
     if web:
-        return util.render_boolean_results_table(
-            responses, suffix="flush_ldap_pool_cache"), util.render_history(env)
+        return (util.render_boolean_results_table(
+                    responses,
+                    suffix="flush_ldap_pool_cache"),
+                util.render_history(env))
 
     for host, response in list(responses.items()):
         if response:
@@ -577,8 +585,8 @@ Parameters:
 
 @cli.command('flush-stylesheet-cache', category='caches')
 def flush_stylesheet_cache(appliances=[], credentials=[],
-                          timeout=120, Domain="", xml_manager="",
-                          no_check_hostname=False, web=False):
+                           timeout=120, Domain="", xml_manager="",
+                           no_check_hostname=False, web=False):
     """This will flush the stylesheet cache for the specified xml_manager
 in the specified Domain on the specified appliances.
 
@@ -617,9 +625,9 @@ Parameters:
                 print "FAILURE"
                 print response
 #
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 # configuration
 # =============
 #
@@ -747,9 +755,9 @@ Parameters:
         print '\n\n', xml
 
 #
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 # domains
 # =======
 #
@@ -897,8 +905,8 @@ saved"""
 
 @cli.command('quiesce-domain', category='domains')
 def quiesce_domain(appliances=[], credentials=[],
-               timeout=120, Domain="",
-               quiesce_timeout=60, no_check_hostname=False, web=False):
+                   timeout=120, Domain="",
+                   quiesce_timeout=60, no_check_hostname=False, web=False):
     """Quiesces a domain on the specified appliances
 
 Parameters:
@@ -914,7 +922,10 @@ Parameters:
         check_hostname=check_hostname)
     logger.info("Attempting to quiesce domain {} for {}".format(
         Domain, str(env.appliances)))
-    kwargs = {'name': Domain, 'timeout': str(quiesce_timeout), 'domain': Domain}
+    kwargs = {
+        'name': Domain,
+        'timeout': str(quiesce_timeout),
+        'domain': Domain}
     responses = env.perform_async_action('DomainQuiesce', **kwargs)
     logger.debug("Responses received: {}".format(str(responses)))
     if web:
@@ -925,7 +936,8 @@ Parameters:
 
 @cli.command('unquiesce-domain', category='domains')
 def unquiesce_domain(appliances=[], credentials=[],
-               timeout=120, Domain="", no_check_hostname=False, web=False):
+                     timeout=120, Domain="", no_check_hostname=False,
+                     web=False):
     """Unquiesces a domain on the specified appliances
 
 Parameters:
@@ -951,8 +963,8 @@ Parameters:
 
 @cli.command('disable-domain', category='domains')
 def disable_domain(appliances=[], credentials=[],
-               timeout=120, Domain=[],
-               save_config=False, no_check_hostname=False, web=False):
+                   timeout=120, Domain=[],
+                   save_config=False, no_check_hostname=False, web=False):
     """Disables a domain on the specified appliances
 
 Parameters:
@@ -1015,8 +1027,8 @@ be saved
 
 @cli.command('enable-domain', category='domains')
 def enable_domain(appliances=[], credentials=[],
-               timeout=120, Domain=[],
-               save_config=False, no_check_hostname=False, web=False):
+                  timeout=120, Domain=[],
+                  save_config=False, no_check_hostname=False, web=False):
     """Enables a domain on the specified appliances
 
 Parameters:
@@ -1076,9 +1088,9 @@ will be saved
     if web:
         return output, util.render_history(env)
 #
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 # appliances
 # ==========
 #
@@ -1095,7 +1107,8 @@ will be saved
 
 @cli.command('quiesce-appliance', category='appliances')
 def quiesce_appliance(appliances=[], credentials=[],
-               timeout=120, quiesce_timeout=60, no_check_hostname=False, web=False):
+                      timeout=120, quiesce_timeout=60,
+                      no_check_hostname=False, web=False):
     """Quiesce the specified appliances
 
 Parameters:
@@ -1150,7 +1163,8 @@ def unquiesce_appliance(appliances=[], credentials=[],
 
 @cli.command('reboot-appliance', category='appliances')
 def reboot_appliance(appliances=[], credentials=[],
-               timeout=120, delay=10, wait=1200, no_check_hostname=False, web=False):
+                     timeout=120, delay=10, wait=1200,
+                     no_check_hostname=False, web=False):
     """Reboot the specified appliances
 
 Parameters:
@@ -1200,7 +1214,8 @@ to come back up
 
 @cli.command('shutdown-appliance', category='appliances')
 def shutdown_appliance(appliances=[], credentials=[],
-               timeout=120, delay=10, no_check_hostname=False, web=False):
+                       timeout=120, delay=10,
+                       no_check_hostname=False, web=False):
     """Shutdown the specified appliances
 
 Parameters:
@@ -1230,7 +1245,8 @@ Parameters:
 
 @cli.command('reload-appliance', category='appliances')
 def reload_appliance(appliances=[], credentials=[],
-                 timeout=120, delay=10, wait=180, no_check_hostname=False, web=False):
+                     timeout=120, delay=10, wait=180,
+                     no_check_hostname=False, web=False):
     """Reload the specified appliances
 
 Parameters:
@@ -1261,8 +1277,10 @@ Parameters:
                 break
             sleep(3)
             if (time() - start) > wait:
-                logger.warn(
-                    "appliance {} failed to come back online within the specified timeout".format(appliance.hostname))
+                msg = "appliance {} ".format(appliance.hostname)
+                msg += "failed to come back online within the "
+                msg += "specified timeout"
+                logger.warn(msg)
                 resp[appliance.hostname] = False
                 break
 
@@ -1297,9 +1315,7 @@ Parameters:
     if web:
         from mast.datapower.backups import get_normal_backup
     else:
-        #lint:disable
         from mast.datapower.backups import get_normal_backup
-        #lint:enable
     check_hostname = not no_check_hostname
     env = datapower.Environment(
         appliances,
@@ -1318,7 +1334,7 @@ Parameters:
         # TODO: Clean-up filesystem > make optional
         logger.info("Cleaning up the filesystem of {}".format(
             appliance.hostname))
-        resp, hist = clean_up(
+        _out = clean_up(
             appliance.hostname,
             appliance.credentials,
             "default",
@@ -1332,11 +1348,10 @@ Parameters:
             timeout,
             out_dir,
             web)
-        logger.debug("responses received: {}".format(str(resp)))
 
         if web:
-            output += resp
-            history += hist
+            output += _out[0]
+            history += _out[1]
 
         if boot_delete:
             logger.info("Attempting to perform boot delete on {}".format(
@@ -1353,7 +1368,7 @@ Parameters:
         # TODO: Get all-domains backup > make optional
         logger.info("Attempting to perform all-domains backup on {}".format(
             appliance.hostname))
-        resp, hist = get_normal_backup(
+        _out = get_normal_backup(
             appliance.hostname,
             appliance.credentials,
             timeout,
@@ -1361,17 +1376,16 @@ Parameters:
             "pre-firmware_upgrade_backup",
             out_dir,
             web=web)
-        logger.debug("Responses received: {}".format(str(resp)))
 
         if web:
-            output += resp
-            history += hist
+            output += _out[0]
+            history += _out[1]
 
         # TODO: Clean-up filesystem > make optional
 
         logger.info("Cleaning up the filesystem of {}".format(
             appliance.hostname))
-        resp, hist = clean_up(
+        _out = clean_up(
             appliance.hostname,
             appliance.credentials,
             "default",
@@ -1385,42 +1399,39 @@ Parameters:
             timeout,
             out_dir,
             web)
-        logger.debug("responses received: {}".format(str(resp)))
 
         if web:
-            output += resp
-            history += hist
+            output += _out[0]
+            history += _out[1]
 
         # TODO: save the config > make optional
         logger.info(
             "Attempting to save the configuration of all-domains on {}".format(
                 appliance.hostname))
-        resp, hist = save_config(
+        _out = save_config(
             appliance.hostname,
             appliance.credentials,
             timeout,
             ["all-domains"],
             web)
-        logger.debug("Responses received: {}".format(resp))
 
         if web:
-            output += resp
-            history += hist
+            output += _out[0]
+            history += _out[1]
 
         # TODO: quiesce appliance > make optional
         logger.info("Attempting to quiesce appliance {}".format(
             appliance.hostname))
-        resp, hist = quiesce_appliance(
+        _out = quiesce_appliance(
             appliance.hostname,
             appliance.credentials,
             timeout,
             quiesce_timeout,
             web)
-        logger.debug("Response received: {}".format(resp))
 
         if web:
-            output += resp
-            history += hist
+            output += _out[0]
+            history += _out[1]
 
         sleep(quiesce_timeout)
 
@@ -1429,64 +1440,59 @@ Parameters:
             if domain not in "default":
                 logger.info("Attempting to disable domain {} on {}".format(
                     domain, appliance.hostname))
-                resp, hist = disable_domain(
+                _out = disable_domain(
                     appliance.hostname,
                     appliance.credentials,
                     timeout,
                     domain,
                     False,
                     web)
-                logger.debug("Response received: {}".format(resp))
 
                 if web:
-                    output += resp
-                    history += hist
+                    output += _out[0]
+                    history += _out[1]
 
         # TODO: Save the config > make optional
         logger.info(
             "Attempting to save configuration of all-domains on {}".format(
                 appliance.hostname))
-        resp, hist = save_config(
+        _out = save_config(
             appliance.hostname,
             appliance.credentials,
             timeout,
             "all-domains",
             web)
-        logger.debug("Responses received: {}".format(resp))
 
         if web:
-            output += resp
-            history += hist
+            output += _out[0]
+            history += _out[1]
 
         # TODO: reboot > make optional
         logger.info("Attempting to reboot {}".format(appliance.hostname))
-        resp, hist = reboot_appliance(
+        _out = reboot_appliance(
             appliance.hostname,
             appliance.credentials,
             timeout,
             reboot_delay,
             reboot_wait,
             web)
-        logger.debug("Responses received: {}".format(resp))
 
         if web:
-            output += resp
-            history += hist
+            output += _out[0]
+            history += _out[1]
 
         # TODO: set the firmware image > make optional
         logger.info("Attempting to set firmware on {}".format(
             appliance.hostname))
-        resp = appliance.set_firmware(
+        _out = appliance.set_firmware(
             file_in,
             accept_license,
             timeout)
-        logger.debug("Responses received: {}".format(resp))
-
-        resp = util.render_boolean_results_table({appliance.hostname: resp})
 
         if web:
+            resp = util.render_boolean_results_table(
+                {appliance.hostname: _out})
             output += resp
-            history += hist
 
         sleep(60)
 
@@ -1510,25 +1516,24 @@ Parameters:
             if domain not in "default":
                 logger.info("Attempting to enable domain {} on {}".format(
                     domain, appliance.hostname))
-                resp, hist = enable_domain(
+                _out = enable_domain(
                     appliance.hostname,
                     appliance.credentials,
                     timeout,
                     domain,
                     False,
                     web)
-                logger.debug("Response received: {}".format(resp))
 
                 if web:
-                    output += resp
-                    history += hist
+                    output += _out[0]
+                    history += _out[1]
 
     if web:
         return output, history
 #
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 # file management
 # ===============
 #
@@ -1540,7 +1545,8 @@ Parameters:
 
 @cli.command('get-encrypted-filesystem', category='file management')
 def get_encrypted_filesystem(appliances=[], credentials=[], timeout=120,
-    out_dir="tmp", no_check_hostname=False, web=False):
+                             out_dir="tmp", no_check_hostname=False,
+                             web=False):
     """This will get a directory listing of all locations within the
 encrypted filesystem."""
     logger = make_logger("mast.system")
@@ -1651,7 +1657,8 @@ def get_filestore(appliances=[], credentials=[],
 
 @cli.command('copy-file', category='file management')
 def copy_file(appliances=[], credentials=[], timeout=120,
-    Domain="", src="", dst="", overwrite=True, no_check_hostname=False, web=False):
+              Domain="", src="", dst="", overwrite=True,
+              no_check_hostname=False, web=False):
     """Copies a file from src to dst (both src and dst are on the appliance)
 optionally overwriting dst.
 
@@ -1662,7 +1669,6 @@ Parameters:
 * overwrite - Whether to overwrite dst if it exists
 """
     logger = make_logger("mast.system")
-    import base64
     check_hostname = not no_check_hostname
     env = datapower.Environment(
         appliances,
@@ -1682,7 +1688,9 @@ Parameters:
             fout, dst, Domain, overwrite)
         logger.debug("Response received: {}".format(resp[appliance.hostname]))
     if web:
-        return util.render_boolean_results_table(resp), util.render_history(env)
+        return (
+            util.render_boolean_results_table(resp),
+            util.render_history(env))
     for host, r in resp.items():
         print host
         print "=" * len(host)
@@ -1739,7 +1747,11 @@ save the file to"""
 
     t = Timestamp()
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
     kwargs = {'domain': Domain, 'filename': location}
     responses = env.perform_async_action('getfile', **kwargs)
 
@@ -1760,10 +1772,15 @@ save the file to"""
 
 @cli.command('del-file', category="file management")
 def delete_file(appliances=[], credentials=[], timeout=120,
-    Domain="", filename="", backup=False, out_dir="tmp",
-    no_check_hostname=False, web=False):
+                Domain="", filename="", backup=False, out_dir="tmp",
+                no_check_hostname=False, web=False):
     """Deletes a file from the specified appliances."""
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    check_hostname = not no_check_hostname
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
     if backup:
         resp = {}
         for appliance in env.appliances:
@@ -1776,7 +1793,9 @@ def delete_file(appliances=[], credentials=[], timeout=120,
     else:
         resp = env.perform_action("del_file", filename=filename, domain=Domain)
     if web:
-        return util.render_boolean_results_table(resp), util.render_history(env)
+        return (
+            util.render_boolean_results_table(resp),
+            util.render_history(env))
     for host, response in resp.items():
         print host
         print "=" * len(host)
@@ -1793,7 +1812,11 @@ def get_error_reports(appliances=[], credentials=[], timeout=120,
     """This will attempt to retireve any error reports from the
 currently configured location on the DataPower appliances"""
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
 
     t = Timestamp()
     _pmr_create_dirs(env.appliances, out_dir, t.timestamp)
@@ -1817,7 +1840,11 @@ def copy_directory(appliances=[], credentials=[], timeout=120,
 in the specified domain."""
     t = Timestamp()
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
 
     for appliance in env.appliances:
         _out_dir = os.path.join(out_dir, t.timestamp, appliance.hostname)
@@ -1889,7 +1916,11 @@ def fetch_logs(appliances=[], credentials=[],
                timeout=120, out_dir='tmp', no_check_hostname=False, web=False):
     """Fetch all log files from the specified appliances"""
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
     kwargs = {'log_dir': out_dir}
     resp = env.perform_async_action('get_all_logs', **kwargs)
 
@@ -1900,11 +1931,16 @@ def fetch_logs(appliances=[], credentials=[],
 
 @cli.command('get-pmr-info', category='auditing')
 def get_pmr_info(appliances=[], credentials=[],
-                 timeout=120, out_dir='tmp', no_check_hostname=False, web=False):
+                 timeout=120, out_dir='tmp', no_check_hostname=False,
+                 web=False):
     """Get all posible troubleshooting information from the
 specified appliances"""
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
 
     t = Timestamp()
     _pmr_create_dirs(env.appliances, out_dir, t.timestamp)
@@ -1927,11 +1963,16 @@ specified appliances"""
 
 @cli.command('object-audit', category='auditing')
 def objects_audit(appliances=[], credentials=[],
-               timeout=120, out_dir='tmp', no_check_hostname=False, web=False):
+                  timeout=120, out_dir='tmp', no_check_hostname=False,
+                  web=False):
     """Get a "diff" of the current and persisted configuration"""
     t = Timestamp()
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
     results = env.perform_async_action('object_audit')
 
     for hostname, audit in list(results.items()):
@@ -1943,46 +1984,6 @@ def objects_audit(appliances=[], credentials=[],
     if web:
         return util.render_see_download_table(
             results, suffix="object_audit"), util.render_history(env)
-
-
-#@cli.command('memory-must-gather', category='auditing')
-#def must_gather(appliances=[], credentials=[],
-                #out_dir='tmp', mem_report_dest="local:///nbleak-usage.txt"):
-    #env = datapower.Environment(appliances, credentials)
-    #t = Timestamp()
-    #command_list = ['top', 'show clock', 'show load', 'show cpu',
-         #'show throughput', 'show tcp', 'show int',
-         #'diag', 'show memory', 'show memory details',
-         #'show connections', 'show handles', 'show activity 50',
-         #'show memory live', "save memory report %s" % (mem_report_dest),
-         #'exit']
-
-    #for appliance in env.appliances:
-        #filename = os.path.join(
-            #out_dir, appliance.hostname, 'must-gather', t.timestamp)
-        #os.makedirs(filename)
-        #filename = os.path.join(filename, 'MemoryGrowth-MustGather.txt')
-        #with open(filename, 'w') as fout:
-            #fout.write(
-                #appliance.ssh_connect().replace(
-                    #appliance.credentials.split(':')[-1],
-                    #''))
-            #asic = appliance.ssh_issue_command
-            #fout.write(asic("top"))
-            #fout.write(asic("diag"))
-            #fout.write(asic("set-memory nbleak immediate"))
-            #fout.write(asic("set-tracing on memory"))
-            #_r = asic("show status")
-            #assert 'Memory Module: nbleak' in _r
-            #assert 'Memory accounting: enabled' in _r
-            #fout.write(_r)
-            #for command in command_list:
-                #fout.write(asic(command))
-            #appliance.ssh_disconnect()
-        #filename = '%s-nbleak-usage-%s.txt' % (appliance.hostname, t.timestamp)
-        #filename = os.path.join(out_dir, filename)
-        #with open(filename, 'w') as fout:
-            #fout.write(appliance.getfile('default', mem_report_dest))
 
 
 @cli.command('get-status', category='auditing')
@@ -1998,7 +1999,11 @@ Parameters:
 * StatusProvider - A list of status providers to query
 * Domain - The domain from which to query the status providers"""
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
 
     if not web:
         if out_file is not None:
@@ -2039,7 +2044,8 @@ def get_config(appliances=[], credentials=[],
                timeout=120, ObjectClass="",
                obj_name=None, recursive=False,
                persisted=False, Domain='default',
-               out_file=None, no_check_hostname=False, machine=False, web=False):
+               out_file=None, no_check_hostname=False,
+               machine=False, web=False):
     """This will get the config of obj_name from the specified
 domain on the specified appliances.
 
@@ -2060,7 +2066,11 @@ otherwise the running configuration will be provided
         out_file = sys.stdout
 
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
 
     kwargs = {
         '_class': ObjectClass,
@@ -2085,9 +2095,9 @@ otherwise the running configuration will be provided
     if out_file != sys.stdout:
         out_file.close()
 #
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 # maintenance
 # ===========
 #
@@ -2120,7 +2130,11 @@ Parameters:
 * backup_files - Whether to backup files before deleting them
 """
     check_hostname = not no_check_hostname
-    env = datapower.Environment(appliances, credentials, timeout, check_hostname=check_hostname)
+    env = datapower.Environment(
+        appliances,
+        credentials,
+        timeout,
+        check_hostname=check_hostname)
 
     t = Timestamp()
     dirs = []
@@ -2181,7 +2195,7 @@ def _clean_dir(appliance, _dir, domain, recursive, backup, timestamp, out_dir):
     # if not recursive don't include_directories
     files = appliance.ls(_dir, domain=domain, include_directories=recursive)
     for file in files:
-        if "diag-log" in file and not "." in file:
+        if "diag-log" in file and "." not in file:
             continue
         if ':/' in file:
             _clean_dir(
@@ -2201,29 +2215,6 @@ def _clean_dir(appliance, _dir, domain, recursive, backup, timestamp, out_dir):
                 fout.close
             appliance.DeleteFile(domain=domain, File=filename)
 
-
-# def _clean_error_reports(appliance, domain, backup, timestamp, out_dir):
-#     if backup:
-#         local_dir = os.path.join(
-#             out_dir,
-#             appliance.hostname,
-#             timestamp,
-#             domain,
-#             'temporary')
-#         os.makedirs(local_dir)
-#     files = appliance.ls(
-#         'temporary:/',
-#         domain=domain,
-#         include_directories=False)
-#     files = [f for f in files if 'error-report' in f]
-#     for _file in files:
-#         filename = 'temporary:/{}'.format(_file)
-#         if backup:
-#             fout = open(os.path.join(local_dir, _file), 'wb')
-#             contents = appliance.getfile(domain, filename)
-#             fout.write(contents)
-#             fout.close
-#         appliance.DeleteFile(domain=domain, File=filename)
 
 def _clean_error_reports(appliance, domain, backup, timestamp, out_dir):
     protocol_xpath = datapower.CONFIG_XPATH + "/ErrorReportSettings/Protocol"
@@ -2259,9 +2250,9 @@ def _clean_error_reports(appliance, domain, backup, timestamp, out_dir):
     else:
         appliance.log_warn(''.join(
                 ('\tThe failure notification looks like it is set for ',
-                protocol,
-                ', which we do not currently support. Failing back',
-                'to temporary:...\n')))
+                 protocol,
+                 ', which we do not currently support. Failing back',
+                 'to temporary:...\n')))
         path = 'temporary:'
         filestore = appliance.get_filestore('default', path)
         _dir = filestore.xml.find('.//location[@name="%s"]' % (path))
@@ -2299,10 +2290,6 @@ def get_data_file(f):
     with open(path, "rb") as fin:
         return fin.read()
 
-from mast.plugins.web import Plugin
-import mast.plugin_utils.plugin_functions as pf
-from functools import partial, update_wrapper
-
 
 class WebPlugin(Plugin):
     def __init__(self):
@@ -2317,7 +2304,7 @@ class WebPlugin(Plugin):
     def js(self):
         return get_data_file('plugin.js')
 #
-#~#~#~#~#~#~#~#
+# ~#~#~#~#~#~#~#
 
 if __name__ == '__main__':
     try:
@@ -2326,4 +2313,3 @@ if __name__ == '__main__':
         if "'NoneType' object has no attribute 'app'" in e:
             raise NotImplementedError(
                 "HTML formatted output is not supported on the CLI")
-
