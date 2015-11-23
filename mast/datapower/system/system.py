@@ -198,7 +198,7 @@ def _verify_zip(zip_file):
 
 
 @cli.command('xor', category='utilities')
-def xor(string='', web=False, no_check_hostname=False):
+def xor(string='', web=False):
     """This will xor encode and base64 encode the given string
 for suitable use in passing credentials to MAST CLI commands.
 This is a useful utility for scripting multiple MAST CLI commands
