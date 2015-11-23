@@ -24,12 +24,9 @@ setup(
             'system=mast.datapower.system:WebPlugin'
         ]
     },
-    data_files=[
-        ("mast/datapower/system/data", [
-            "./mast/datapower/system/docroot/plugin.js",
-            "./mast/datapower/system/docroot/plugin.css"
-        ])
-    ],
+    package_data={
+        "mast.datapower.system": ["docroot/*"]
+    },
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
