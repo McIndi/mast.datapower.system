@@ -1181,23 +1181,21 @@ to come back up
 
     sleep(delay)
     start = time()
-    responses = []
+    responses = {}
     for appliance in env.appliances:
         logger.info("Attempting to reboot {}".format(appliance.hostname))
         kwargs = {"Mode": "reboot", "Delay": str(delay)}
         resp = appliance.Shutdown(**kwargs)
-        responses.append(resp)
+        responses[appliance.hostname] = resp
         logger.debug("Response received: {}".format(str(resp)))
         sleep(delay)
         start = time()
         while True:
             sleep(5)
             if appliance.is_reachable():
-                print "\tAppliance is back up, moving on"
+                logger.info("Appliance is back up, moving on")
                 break
             if (time() - start) > wait:
-                print "\tAppliace failed to respond within the specified time."
-                print "Exiting"
                 logger.error(
                     "{} failed to respond within the specified time".format(
                         appliance.hostname
@@ -1210,6 +1208,10 @@ to come back up
     if web:
         return util.render_boolean_results_table(
             responses, suffix="reboot_appliance"), util.render_history(env)
+
+    for host, resp in responses.items():
+        print '\n', host, '\n', '*' * len(host), '\n'
+        print resp.pretty
 
 
 @cli.command('shutdown-appliance', category='appliances')
