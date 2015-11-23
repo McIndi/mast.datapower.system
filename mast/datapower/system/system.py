@@ -1178,33 +1178,35 @@ to come back up
         credentials,
         timeout,
         check_hostname=check_hostname)
-    logger.info("Attempting to reboot {}".format(str(env.appliances)))
-    kwargs = {'Mode': 'reboot', 'Delay': str(delay)}
-    responses = env.perform_action('Shutdown', **kwargs)
-    logger.debug("Responses received: {}".format(str(responses)))
 
     sleep(delay)
     start = time()
-    while True:
-        reachable_appliances = []
-        for appliance in env.appliances:
+    responses = []
+    for appliance in env.appliances:
+        logger.info("Attempting to reboot {}".format(appliance.hostname))
+        kwargs = {"Mode": "reboot", "Delay": str(delay)}
+        resp = appliance.Shutdown(**kwargs)
+        responses.append(resp)
+        logger.debug("Response received: {}".format(str(resp)))
+        sleep(delay)
+        start = time()
+        while True:
+            sleep(5)
             if appliance.is_reachable():
-                logger.info('{} is Back online.'.format(appliance.hostname))
-                reachable_appliances.append(appliance.hostname)
-            else:
-                logger.info('No response from {}'.format(appliance.hostname))
-        if len(env.appliances) == len(reachable_appliances):
-            logger.info("All appliances are back online")
-            print "\tAll appliances are back up"
-            break
-        else:
-            if (time() - start) >= wait:
-                logger.warn(
-                    "a timeout accurred waiting for"
-                    " all appliances to come back up")
+                print "\tAppliance is back up, moving on"
                 break
-        sleep(5)
-
+            if (time() - start) > wait:
+                print "\tAppliace failed to respond within the specified time."
+                print "Exiting"
+                logger.error(
+                    "{} failed to respond within the specified time".format(
+                        appliance.hostname
+                    )
+                )
+                raise RuntimeError(
+                    "Appliance "
+                    "{} did not respond within specified time {}".format(
+                        appliance.hostname, str(wait)))
     if web:
         return util.render_boolean_results_table(
             responses, suffix="reboot_appliance"), util.render_history(env)
