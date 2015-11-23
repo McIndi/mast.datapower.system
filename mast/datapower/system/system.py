@@ -29,8 +29,6 @@ cli = commandr.Commandr()
 
 MAST_HOME = os.environ["MAST_HOME"]
 
-logger = make_logger("mast.datapower.system")
-
 
 def _pmr_create_dirs(appliances, out_dir, timestamp):
     for appliance in appliances:
@@ -1869,6 +1867,8 @@ def create_dir(appliances=[], credentials=[], timeout=120,
     """Creates a directory in the specified domain.
 
 __parent directory does not need to exist.__"""
+    logger = make_logger("mast.datapower.system")
+
     check_hostname = not no_check_hostname
     env = datapower.Environment(
         appliances,
