@@ -251,7 +251,7 @@ def flush_aaa_cache(appliances=[],
     """This will flush the AAA Cache for the specified AAAPolicy
 in the specified Domain on the specified appliances.
 
-Parameters:
+Parameters: 
 
 * `-a, --appliances`: The hostname(s), ip address(es), environment name(s)
 or alias(es) of the appliances you would like to affect. For details
