@@ -1,12 +1,12 @@
-"""==========================================================
+"""
 mast system:
 
 A set of tools for automating routine system-administration
 tasks associated with IBM DataPower appliances.
 
-Copyright 2014, All Rights Reserved
+Copyright 2016, All Rights Reserved
 McIndi Solutions LLC
-=========================================================="""
+"""
 from system import *
 
 if __name__ == "__main__":
