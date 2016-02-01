@@ -2855,7 +2855,8 @@ def get_error_reports(appliances=[],
                       timeout=120,
                       no_check_hostname=False,
                       out_dir="tmp",
-                      web=False):
+                      web=False,
+                      decompress=False):
     """This will attempt to retireve any error reports from the
 currently configured location on the specified appliance(s).
 
@@ -2902,6 +2903,17 @@ DO NOT USE.__"""
             os.makedirs(_dir)
     ers = _pmr_get_error_report_settings(env.appliances)
     _pmr_download_error_reports(env.appliances, out_dir, ers, "")
+    if decompress:
+        import gzip
+        dirs = os.listdir(out_dir)
+        files = []
+        for _dir in dirs:
+             files.extend([os.path.join(out_dir, _dir, x) for x in os.listdir(os.path.join(out_dir, _dir))])
+        files = filter(lambda x: x.endswith(".gz"), files)
+        for filename in files:
+            new_filename = filename.replace(".gz", "")
+            with gzip.open(filename, "rb") as fin, open(new_filename, "wb") as fout:
+                fout.writelines(fin.readlines())
 
     # Quick hack to let render_see_download_table() to get the appliance names
     _ = {}
