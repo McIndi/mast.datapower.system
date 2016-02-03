@@ -2855,8 +2855,8 @@ def get_error_reports(appliances=[],
                       timeout=120,
                       no_check_hostname=False,
                       out_dir="tmp",
-                      web=False,
-                      decompress=False):
+                      decompress=False,
+                      web=False):
     """This will attempt to retireve any error reports from the
 currently configured location on the specified appliance(s).
 
@@ -2885,6 +2885,8 @@ halt if a timeout is reached.
 * `-n, --no-check-hostname`: If specified SSL verification will be turned
 off when sending commands to the appliances.
 * `-o, --out-dir`: The directory to save the error reports in
+* `-d, --decompress`: If specified, the error reports will be decompressed
+from the ".gz" encoding
 * `-w, --web`: __For Internel Use Only, will be removed in future versions.
 DO NOT USE.__"""
     check_hostname = not no_check_hostname
@@ -2912,8 +2914,11 @@ DO NOT USE.__"""
         files = filter(lambda x: x.endswith(".gz"), files)
         for filename in files:
             new_filename = filename.replace(".gz", "")
+            print "Decompress: {} -> {}".format(filename, new_filename)
             with gzip.open(filename, "rb") as fin, open(new_filename, "wb") as fout:
                 fout.writelines(fin.readlines())
+            os.remove(os.path.abspath(filename))
+            print "\tDone"
 
     # Quick hack to let render_see_download_table() to get the appliance names
     _ = {}
@@ -3701,3 +3706,5 @@ if __name__ == '__main__':
         if "'NoneType' object has no attribute 'app'" in e:
             raise NotImplementedError(
                 "HTML formatted output is not supported on the CLI")
+        else:
+            raise
