@@ -2845,8 +2845,8 @@ DO NOT USE.__"""
                 print "\t", msg
             appliance.log_error(msg)
     if web:
-        return util.render_boolean_results_table(responses,
-                                                 util.render_history(env))
+        return (util.render_boolean_results_table(responses),
+               util.render_history(env))
 
 
 @cli.command('get-error-reports', category='error-reports')
