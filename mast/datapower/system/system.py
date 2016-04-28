@@ -24,7 +24,7 @@ from pkg_resources import resource_string
 from functools import partial, update_wrapper
 import mast.plugin_utils.plugin_utils as util
 import mast.plugin_utils.plugin_functions as pf
-
+from mast.datapower.backups import get_normal_backup 
 
 cli = commandr.Commandr()
 
@@ -2059,10 +2059,6 @@ upgrading the firmware
 * `-w, --web`: __For Internel Use Only, will be removed in future versions.
 DO NOT USE.__"""
     logger = make_logger("mast.system")
-    if web:
-        from mast.datapower.backups import get_normal_backup
-    else:
-        from mast.datapower.backups import get_normal_backup
     check_hostname = not no_check_hostname
     env = datapower.Environment(
         appliances,
@@ -2082,19 +2078,20 @@ DO NOT USE.__"""
         logger.info("Cleaning up the filesystem of {}".format(
             appliance.hostname))
         _out = clean_up(
-            appliance.hostname,
-            appliance.credentials,
-            "default",
-            True,
-            True,
-            True,
-            True,
-            True,
-            True,
-            True,
-            timeout,
-            out_dir,
-            web)
+            appliances=appliance.hostname,
+            credentials=appliance.credentials,
+            timeout=timeout,
+            no_check_hostname=no_check_hostname,
+            Domain="default",
+            checkpoints=True,
+            export=True,
+            logtemp=True,
+            logstore=True,
+            error_reports=True,
+            recursive=True,
+            backup_files=True,
+            out_dir=out_dir,
+            web=web)
 
         if web:
             output += _out[0]
@@ -2115,13 +2112,15 @@ DO NOT USE.__"""
         # TODO: Get all-domains backup > make optional
         logger.info("Attempting to perform all-domains backup on {}".format(
             appliance.hostname))
+
         _out = get_normal_backup(
-            appliance.hostname,
-            appliance.credentials,
-            timeout,
-            "all-domains",
-            "pre-firmware_upgrade_backup",
-            out_dir,
+            appliances=appliance.hostname,
+            crredentials=appliance.credentials,
+            timeout=timeout,
+            no_check_hostname=no_check_hostname,
+            Domain="all-domains",
+            comment="pre-firmware_upgrade_backup",
+            out_dir=out_dir,
             web=web)
 
         if web:
@@ -2133,19 +2132,20 @@ DO NOT USE.__"""
         logger.info("Cleaning up the filesystem of {}".format(
             appliance.hostname))
         _out = clean_up(
-            appliance.hostname,
-            appliance.credentials,
-            "default",
-            True,
-            True,
-            True,
-            True,
-            True,
-            True,
-            True,
-            timeout,
-            out_dir,
-            web)
+            appliances=appliance.hostname,
+            credentials=appliance.credentials,
+            timeout=timeout,
+            no_check_hostname=no_check_hostname,
+            Domain="default",
+            checkpoints=True,
+            export=True,
+            logtemp=True,
+            logstore=True,
+            error_reports=True,
+            recursive=True,
+            backup_files=True,
+            out_dir=out_dir,
+            web=web)
 
         if web:
             output += _out[0]
@@ -2156,11 +2156,11 @@ DO NOT USE.__"""
             "Attempting to save the configuration of all-domains on {}".format(
                 appliance.hostname))
         _out = save_config(
-            appliance.hostname,
-            appliance.credentials,
-            timeout,
-            ["all-domains"],
-            web)
+            appliances=appliance.hostname,
+            credentials=appliance.credentials,
+            timeout=timeout,
+            Domain=["all-domains"],
+            web=web)
 
         if web:
             output += _out[0]
@@ -2170,11 +2170,11 @@ DO NOT USE.__"""
         logger.info("Attempting to quiesce appliance {}".format(
             appliance.hostname))
         _out = quiesce_appliance(
-            appliance.hostname,
-            appliance.credentials,
-            timeout,
-            quiesce_timeout,
-            web)
+            appliances=appliance.hostname,
+            credentials=appliance.credentials,
+            timeout=timeout,
+            quiesce_timeout=quiesce_timeout,
+            web=web)
 
         if web:
             output += _out[0]
@@ -2188,12 +2188,12 @@ DO NOT USE.__"""
                 logger.info("Attempting to disable domain {} on {}".format(
                     domain, appliance.hostname))
                 _out = disable_domain(
-                    appliance.hostname,
-                    appliance.credentials,
-                    timeout,
-                    domain,
-                    False,
-                    web)
+                    appliances=appliance.hostname,
+                    credentials=appliance.credentials,
+                    timeout=timeout,
+                    Domain=[domain],
+                    save_config=False,
+                    web=web)
 
                 if web:
                     output += _out[0]
@@ -2204,11 +2204,11 @@ DO NOT USE.__"""
             "Attempting to save configuration of all-domains on {}".format(
                 appliance.hostname))
         _out = save_config(
-            appliance.hostname,
-            appliance.credentials,
-            timeout,
-            "all-domains",
-            web)
+            appliances=appliance.hostname,
+            credentials=appliance.credentials,
+            timeout=timeout,
+            Domain=["all-domains"],
+            web=web)
 
         if web:
             output += _out[0]
@@ -2217,12 +2217,12 @@ DO NOT USE.__"""
         # TODO: reboot > make optional
         logger.info("Attempting to reboot {}".format(appliance.hostname))
         _out = reboot_appliance(
-            appliance.hostname,
-            appliance.credentials,
-            timeout,
-            reboot_delay,
-            reboot_wait,
-            web)
+            appliances=appliance.hostname,
+            credentials=appliance.credentials,
+            timeout=timeout,
+            reboot_delay=reboot_delay,
+            reboot_wait=reboot_wait,
+            web=web)
 
         if web:
             output += _out[0]
@@ -2264,12 +2264,12 @@ DO NOT USE.__"""
                 logger.info("Attempting to enable domain {} on {}".format(
                     domain, appliance.hostname))
                 _out = enable_domain(
-                    appliance.hostname,
-                    appliance.credentials,
-                    timeout,
-                    domain,
-                    False,
-                    web)
+                    appliances=appliance.hostname,
+                    credentials=appliance.credentials,
+                    timeout=timeout,
+                    Domain=[domain],
+                    save_config=False,
+                    web=web)
 
                 if web:
                     output += _out[0]
