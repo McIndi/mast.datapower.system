@@ -2074,9 +2074,14 @@ DO NOT USE.__"""
 
     for appliance in env.appliances:
 
+        if not web:
+            print appliance.hostname
         # TODO: Clean-up filesystem > make optional
         logger.info("Cleaning up the filesystem of {}".format(
             appliance.hostname))
+        
+        if not web:
+            print "\tCleaning Filesystem"
         _out = clean_up(
             appliances=appliance.hostname,
             credentials=appliance.credentials,
@@ -2096,10 +2101,14 @@ DO NOT USE.__"""
         if web:
             output += _out[0]
             history += _out[1]
+        else:
+            print "\t\tDone."
 
         if boot_delete:
             logger.info("Attempting to perform boot delete on {}".format(
                 appliance.hostname))
+            if not web:
+                print "\tAttempting to performing boot delete"
             appliance.ssh_connect()
             r = appliance.ssh_issue_command("co")
             r += appliance.ssh_issue_command("flash")
@@ -2107,15 +2116,19 @@ DO NOT USE.__"""
             r += appliance.ssh_issue_command("exit")
             r += appliance.ssh_issue_command("exit")
             r += appliance.ssh_issue_command("exit")
+            if not web:
+                print r
             logger.debug("Responses received: {}".format(str(r)))
 
         # TODO: Get all-domains backup > make optional
         logger.info("Attempting to perform all-domains backup on {}".format(
             appliance.hostname))
 
+        if not web:
+            print "\tGetting an all-domains backup"
         _out = get_normal_backup(
             appliances=appliance.hostname,
-            crredentials=appliance.credentials,
+            credentials=appliance.credentials,
             timeout=timeout,
             no_check_hostname=no_check_hostname,
             Domain="all-domains",
@@ -2126,11 +2139,15 @@ DO NOT USE.__"""
         if web:
             output += _out[0]
             history += _out[1]
+        else:
+            print "\t\tDone."
 
         # TODO: Clean-up filesystem > make optional
 
         logger.info("Cleaning up the filesystem of {}".format(
             appliance.hostname))
+        if not web:
+            print "\tCleaning filesystem"
         _out = clean_up(
             appliances=appliance.hostname,
             credentials=appliance.credentials,
@@ -2150,35 +2167,47 @@ DO NOT USE.__"""
         if web:
             output += _out[0]
             history += _out[1]
+        else:
+            print "\t\tDone"
 
         # TODO: save the config > make optional
         logger.info(
             "Attempting to save the configuration of all-domains on {}".format(
                 appliance.hostname))
+        if not web:
+            print "\tSaving configuration"
         _out = save_config(
             appliances=appliance.hostname,
             credentials=appliance.credentials,
             timeout=timeout,
+            no_check_hostname=no_check_hostname,
             Domain=["all-domains"],
             web=web)
 
         if web:
             output += _out[0]
             history += _out[1]
+        else:
+            print "\t\tDone."
 
         # TODO: quiesce appliance > make optional
         logger.info("Attempting to quiesce appliance {}".format(
             appliance.hostname))
+        if not web:
+            print "\tQuiescing Appliance"
         _out = quiesce_appliance(
             appliances=appliance.hostname,
             credentials=appliance.credentials,
             timeout=timeout,
+            no_check_hostname=no_check_hostname,
             quiesce_timeout=quiesce_timeout,
             web=web)
 
         if web:
             output += _out[0]
             history += _out[1]
+        else:
+            print "\t\tDone."
 
         sleep(quiesce_timeout)
 
@@ -2187,10 +2216,13 @@ DO NOT USE.__"""
             if domain not in "default":
                 logger.info("Attempting to disable domain {} on {}".format(
                     domain, appliance.hostname))
+                if not web:
+                    print "\tdisabling domain {}".format(domain)
                 _out = disable_domain(
                     appliances=appliance.hostname,
                     credentials=appliance.credentials,
                     timeout=timeout,
+                    no_check_hostname=no_check_hostname,
                     Domain=[domain],
                     save_config=False,
                     web=web)
@@ -2198,39 +2230,54 @@ DO NOT USE.__"""
                 if web:
                     output += _out[0]
                     history += _out[1]
+                else:
+                    print "\t\tDone."
 
         # TODO: Save the config > make optional
         logger.info(
             "Attempting to save configuration of all-domains on {}".format(
                 appliance.hostname))
+        if not web:
+            print "\tSaving configuration"
         _out = save_config(
             appliances=appliance.hostname,
             credentials=appliance.credentials,
             timeout=timeout,
+            no_check_hostname=no_check_hostname,
             Domain=["all-domains"],
             web=web)
 
         if web:
             output += _out[0]
             history += _out[1]
+        else:
+            print "\t\tDone"
 
         # TODO: reboot > make optional
         logger.info("Attempting to reboot {}".format(appliance.hostname))
+        if not web:
+            print "\tRebooting appliance"
         _out = reboot_appliance(
             appliances=appliance.hostname,
             credentials=appliance.credentials,
             timeout=timeout,
-            reboot_delay=reboot_delay,
-            reboot_wait=reboot_wait,
+            no_check_hostname=no_check_hostname,
+            delay=reboot_delay,
+            wait=reboot_wait,
             web=web)
 
         if web:
             output += _out[0]
             history += _out[1]
+        else:
+            print "\t\tDone."
 
         # TODO: set the firmware image > make optional
         logger.info("Attempting to set firmware on {}".format(
             appliance.hostname))
+
+        if not web:
+            print "\tAttempting to update firmware"
         _out = appliance.set_firmware(
             file_in,
             accept_license,
@@ -2240,6 +2287,8 @@ DO NOT USE.__"""
             resp = util.render_boolean_results_table(
                 {appliance.hostname: _out})
             output += resp
+        else:
+            print "\t\tDone."
 
         sleep(60)
 
@@ -2263,10 +2312,13 @@ DO NOT USE.__"""
             if domain not in "default":
                 logger.info("Attempting to enable domain {} on {}".format(
                     domain, appliance.hostname))
+                if not web:
+                    print "\tprint enabling domain {}".format(domain)
                 _out = enable_domain(
                     appliances=appliance.hostname,
                     credentials=appliance.credentials,
                     timeout=timeout,
+                    no_check_hostname=no_check_hostname,
                     Domain=[domain],
                     save_config=False,
                     web=web)
@@ -2274,6 +2326,8 @@ DO NOT USE.__"""
                 if web:
                     output += _out[0]
                     history += _out[1]
+                else:
+                    print "\t\tDone."
 
     if web:
         return output, history
