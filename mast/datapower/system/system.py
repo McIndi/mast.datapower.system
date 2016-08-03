@@ -2024,7 +2024,7 @@ def firmware_upgrade(appliances=[],
                      no_cleanup=False,
                      no_backup=False,
                      no_save_config=False,
-                     no_quiesce_appliance=False,
+                     no_quiesce_appliances=False,
                      no_disable_domains=False,
                      no_reboot=False,
                      no_set_firmware=False,
@@ -2070,7 +2070,7 @@ DO NOT USE.__"""
     cleanup = not no_cleanup
     backup = not no_backup
     save = not no_save_config
-    quiesce_appliance = not no_quiesce_appliance
+    quiesce_appliances = not no_quiesce_appliances
     disable_domains = not no_disable_domains
     set_firmware = not no_set_firmware
     enable_domains = not no_enable_domains
@@ -2205,7 +2205,7 @@ DO NOT USE.__"""
             else:
                 print "\t\tDone."
 
-        if quiesce_appliance:
+        if quiesce_appliances:
             logger.info("Attempting to quiesce appliance {}".format(
                 appliance.hostname))
             if not web:
