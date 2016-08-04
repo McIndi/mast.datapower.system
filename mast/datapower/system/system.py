@@ -1368,7 +1368,7 @@ def quiesce_domain(appliances=[],
                    credentials=[],
                    timeout=120,
                    no_check_hostname=False,
-                   Domain="",
+                   Domain=[],
                    quiesce_timeout=60,
                    web=False):
     """Quiesces a domain on the specified appliances
@@ -1410,12 +1410,19 @@ DO NOT USE.__"""
         check_hostname=check_hostname)
     logger.info("Attempting to quiesce domain {} for {}".format(
         Domain, str(env.appliances)))
-    kwargs = {
-        'name': Domain,
-        'timeout': str(quiesce_timeout),
-        'domain': Domain}
-    responses = env.perform_async_action('DomainQuiesce', **kwargs)
-    logger.debug("Responses received: {}".format(str(responses)))
+
+    responses = {}
+    for appliance in env.appliances:
+        domains = Domain
+        if "all-domains" in domains:
+            domains = appliance.domains
+        for domain in domains:
+            kwargs = {
+                'name': domain,
+                'timeout': str(quiesce_timeout),
+                'domain': domain}
+            responses[appliance.hostname+"-"+domain] = appliance.DomainQuiesce(**kwargs)
+            logger.debug("Response received: {}".format(str(responses[appliance.hostname+"-"+domain])))
     if web:
         return (
             util.render_boolean_results_table(
@@ -1427,7 +1434,7 @@ def unquiesce_domain(appliances=[],
                      credentials=[],
                      timeout=120,
                      no_check_hostname=False,
-                     Domain="",
+                     Domain=[],
                      web=False):
     """Unquiesces a domain on the specified appliances
 
@@ -1465,11 +1472,18 @@ DO NOT USE.__"""
         credentials,
         timeout,
         check_hostname=check_hostname)
-    logger.info("Attempting to unquiesce domain {} on {}".format(
-        Domain, env.appliances))
-    kwargs = {'name': Domain}
-    responses = env.perform_async_action('DomainUnquiesce', **kwargs)
-    logger.debug("Responses received: {}".format(str(responses)))
+
+    responses = {}
+    for appliance in env.appliances:
+        domains = Domain
+        if "all-domains" in domains:
+            domains = appliance.domains
+        for domain in domains:
+            logger.info("Attempting to unquiesce domain {} on {}".format(
+                Domain, env.appliances))
+            kwargs = {'name': domain}
+            responses[appliance.hostname+"-"+domain] = appliance.DomainUnquiesce(**kwargs)
+            logger.debug("Responses received: {}".format(str(responses[appliance.hostname+"-"+domain])))
 
     if web:
         return util.render_boolean_results_table(
