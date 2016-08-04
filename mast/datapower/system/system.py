@@ -2342,7 +2342,7 @@ DO NOT USE.__"""
                     logger.info("Attempting to enable domain {} on {}".format(
                         domain, appliance.hostname))
                     if not web:
-                        print "\tprint enabling domain {}".format(domain)
+                        print "\tenabling domain {}".format(domain)
                     _out = enable_domain(
                         appliances=appliance.hostname,
                         credentials=appliance.credentials,
