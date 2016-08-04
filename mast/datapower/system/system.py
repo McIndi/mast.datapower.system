@@ -2357,6 +2357,25 @@ DO NOT USE.__"""
                         history += _out[1]
                     else:
                         print "\t\tDone."
+        if save:
+            logger.info(
+                "Attempting to save configuration of all-domains on {}".format(
+                    appliance.hostname))
+            if not web:
+                print "\tSaving configuration"
+            _out = save_config(
+                appliances=appliance.hostname,
+                credentials=appliance.credentials,
+                timeout=timeout,
+                no_check_hostname=no_check_hostname,
+                Domain=["all-domains"],
+                web=web)
+
+            if web:
+                output += _out[0]
+                history += _out[1]
+            else:
+                print "\t\tDone"
 
     if web:
         return output, history
