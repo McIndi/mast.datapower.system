@@ -10,3 +10,4 @@ except AttributeError, e:
     if "'NoneType' object has no attribute 'app'" in e:
         raise NotImplementedError(
             "HTML formatted output is not supported on the CLI")
+    raise
