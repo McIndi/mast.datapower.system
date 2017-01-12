@@ -1052,6 +1052,8 @@ DO NOT USE.__"""
     resp = env.perform_action("ServiceQuiesce", **kwargs)
     logger.debug("Responses received: {}".format(str(resp)))
 
+    sleep(quiesce_timeout)
+
     if web:
         return util.render_boolean_results_table(
             resp, suffix="quiesce_service"), util.render_history(env)
@@ -1423,6 +1425,7 @@ DO NOT USE.__"""
                 'domain': domain}
             responses[appliance.hostname+"-"+domain] = appliance.DomainQuiesce(**kwargs)
             logger.debug("Response received: {}".format(str(responses[appliance.hostname+"-"+domain])))
+            sleep(quiesce_timeout)
     if web:
         return (
             util.render_boolean_results_table(
@@ -1737,6 +1740,7 @@ DO NOT USE.__"""
         str(env.appliances)))
     kwargs = {'timeout': str(quiesce_timeout)}
     responses = env.perform_action('QuiesceDP', **kwargs)
+    sleep(quiesce_timeout)
     logger.debug("Responses received: {}".format(str(responses)))
 
     if web:

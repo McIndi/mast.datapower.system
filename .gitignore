@@ -1,3 +1,5 @@
 build/
 dist/
 mast.datapower.system.egg-info/
+mast/__init__.pyc
+mast/datapower/__init__.pyc
