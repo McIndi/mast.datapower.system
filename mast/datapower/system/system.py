@@ -24,7 +24,7 @@ from pkg_resources import resource_string
 from functools import partial, update_wrapper
 import mast.plugin_utils.plugin_utils as util
 import mast.plugin_utils.plugin_functions as pf
-from mast.datapower.backups import get_normal_backup 
+from mast.datapower.backups import get_normal_backup
 
 cli = commandr.Commandr()
 
@@ -2110,11 +2110,11 @@ DO NOT USE.__"""
 
         if not web:
             print appliance.hostname
-        
+
         if cleanup:
             logger.info("Cleaning up the filesystem of {}".format(
                 appliance.hostname))
-            
+
             if not web:
                 print "\tCleaning Filesystem"
             _out = clean_up(
@@ -3456,7 +3456,7 @@ DO NOT USE.__"""
                 status = repr(response)
             else:
                 status = str(response)
-
+.
             header = '\n\n%s - %s - %s\n\n' % (hostname, provider, t.timestamp)
             if not web:
                 out_file.write(header + status + '\n')
