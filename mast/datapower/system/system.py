@@ -3456,7 +3456,6 @@ DO NOT USE.__"""
                 status = repr(response)
             else:
                 status = str(response)
-.
             header = '\n\n%s - %s - %s\n\n' % (hostname, provider, t.timestamp)
             if not web:
                 out_file.write(header + status + '\n')
