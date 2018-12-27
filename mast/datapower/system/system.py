@@ -1041,12 +1041,14 @@ DO NOT USE.__"""
         appliances,
         credentials,
         timeout,
-        check_hostname=check_hostname)
+        check_hostname=check_hostname
+    )
     kwargs = {
         "type": type,
         "name": name,
         "timeout": quiesce_timeout,
-        "domain": Domain}
+        "domain": Domain
+    }
     logger.info("Attempting to quiesce service {} in {} on {}".format(
         name, Domain, str(env.appliances)))
     resp = env.perform_action("ServiceQuiesce", **kwargs)
